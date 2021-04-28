@@ -1,0 +1,9 @@
+[package]
+name = "snakegame"
+version = "0.1.0"
+authors = ["Volodymyr Shamray <shamray@shamray@outlook.com>"]
+edition = "2018"
+
+[dependencies]
+ggez = "0.5"
+rand = "0.8"
