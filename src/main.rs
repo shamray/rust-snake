@@ -23,7 +23,7 @@ enum Direction {
     Right,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 struct Position {
     x: i16,
     y: i16,
@@ -32,6 +32,17 @@ struct Position {
 impl Position {
     pub fn new(x: i16, y: i16) -> Self {
         Self { x, y }
+    }
+}
+
+impl From<Position> for graphics::Rect {
+    fn from(pos: Position) -> Self {
+        graphics::Rect::new_i32(
+            (pos.x * PIXEL_SIZE.0).into(),
+            (pos.y * PIXEL_SIZE.0).into(),
+            (PIXEL_SIZE.0 - 1).into(),
+            (PIXEL_SIZE.1 - 1).into(),
+        )
     }
 }
 
@@ -47,13 +58,7 @@ impl Fruit {
     }
 
     fn draw(&self, ctx: &mut Context) -> GameResult<()> {
-        let rect = graphics::Rect::new_i32(
-            (self.pos.x).into(),
-            (self.pos.y).into(),
-            (PIXEL_SIZE.0 - 1).into(),
-            (PIXEL_SIZE.1 - 1).into()
-        );
-        let mesh = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, RED.into())?;
+        let mesh = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), self.pos.into(), RED.into())?;
         graphics::draw(ctx, &mesh, ggez::graphics::DrawParam::default())        
     }
 }
@@ -78,13 +83,7 @@ impl Snake {
     }
 
     fn draw(&self, ctx: &mut Context) -> GameResult<()> {
-        let rect = graphics::Rect::new_i32(
-            (self.head.x).into(),
-            (self.head.y).into(),
-            (PIXEL_SIZE.0 - 1).into(),
-            (PIXEL_SIZE.1 - 1).into()
-        );
-        let mesh = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), rect, GREEN.into())?;
+        let mesh = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), self.head.into(), GREEN.into())?;
         graphics::draw(ctx, &mesh, ggez::graphics::DrawParam::default())        
     }
 }
