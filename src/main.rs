@@ -12,6 +12,7 @@ const SCREEN_SIZE: (f32, f32) = (
 
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
+const DEFAULT_ACCEL: i16 = 1;
 
 use ggez::{event, graphics, conf, Context, ContextBuilder, GameResult};
 use ggez::input::keyboard::KeyCode;
@@ -33,6 +34,19 @@ struct Position {
 
 impl Position {
     pub fn new(x: i16, y: i16) -> Self {
+        Self { x, y }
+    }
+
+    pub fn new_by_direction(x: i16, y: i16, direction: Direction) -> Self {
+        let accel = DEFAULT_ACCEL;
+
+        let (x, y) = match direction {
+            Direction::Up => (x, y - accel),
+            Direction::Down => (x, y + accel),
+            Direction::Left => (x - accel, y),
+            Direction::Right => (x + accel, y),
+        };
+
         Self { x, y }
     }
 }
@@ -81,6 +95,9 @@ impl Snake {
     }
 
     fn update(&mut self, fruit: &Fruit) -> GameResult<()> {
+        let new_head = Position::new_by_direction(self.head.x, self.head.y, self.direction);
+        self.head = new_head;
+
         Ok(())
     }
 
@@ -101,6 +118,10 @@ impl Game {
             snake: Snake::new(SNAKE_INIT_POS.0, SNAKE_INIT_POS.1),
             fruit: Fruit::new(FRUIT_INIT_POS.0, FRUIT_INIT_POS.1),
         }
+    }
+
+    fn gameover(_ctx: &Context) {
+
     }
 }
 
@@ -126,7 +147,9 @@ impl event::EventHandler for Game {
         _keymods: KeyMods,
         _repeat: bool
     ) {
-        
+        if keycode == ggez::input::keyboard::KeyCode::Escape {
+            Game::gameover(ctx);
+        }
     }
 }
 
