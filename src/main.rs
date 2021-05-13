@@ -14,6 +14,8 @@ const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 
 use ggez::{event, graphics, conf, Context, ContextBuilder, GameResult};
+use ggez::input::keyboard::KeyCode;
+use ggez::input::keyboard::KeyMods;
 
 #[derive(Copy, Clone)]
 enum Direction {
@@ -115,6 +117,16 @@ impl event::EventHandler for Game {
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
         self.snake.update(&self.fruit)?;
         Ok(())
+    }
+
+    fn key_down_event(
+        &mut self,
+        ctx: &mut Context,
+        keycode: KeyCode,
+        _keymods: KeyMods,
+        _repeat: bool
+    ) {
+        
     }
 }
 
