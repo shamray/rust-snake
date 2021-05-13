@@ -27,6 +27,18 @@ enum Direction {
     Right,
 }
 
+impl Direction {
+    pub fn from_keycode(key: ggez::input::keyboard::KeyCode) -> Option<Direction> {
+        match key {
+            ggez::input::keyboard::KeyCode::Up => Some(Direction::Up),
+            ggez::input::keyboard::KeyCode::Down => Some(Direction::Down),
+            ggez::input::keyboard::KeyCode::Left => Some(Direction::Left),
+            ggez::input::keyboard::KeyCode::Right => Some(Direction::Right),
+            _ => None
+        }
+    }
+}
+
 #[derive(PartialEq, Copy, Clone)]
 struct Position {
     x: i16,
@@ -152,6 +164,9 @@ impl event::EventHandler for Game {
     ) {
         if keycode == ggez::input::keyboard::KeyCode::Escape {
             Game::gameover(ctx);
+        }
+        if let Some(direction) = Direction::from_keycode(keycode) {
+            self.snake.direction = direction;
         }
     }
 }
