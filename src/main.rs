@@ -13,6 +13,7 @@ const SCREEN_SIZE: (f32, f32) = (
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 const DEFAULT_ACCEL: i16 = 1;
+const DEFAULT_FPS: u16 = 4;
 
 use ggez::{event, graphics, conf, Context, ContextBuilder, GameResult};
 use ggez::input::keyboard::KeyCode;
@@ -135,8 +136,10 @@ impl event::EventHandler for Game {
         graphics::present(ctx)
     }
 
-    fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        self.snake.update(&self.fruit)?;
+    fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
+        while ggez::timer::check_update_time(ctx, DEFAULT_FPS as u32) {
+            self.snake.update(&self.fruit)?;
+        }
         Ok(())
     }
 
