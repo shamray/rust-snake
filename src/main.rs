@@ -27,6 +27,16 @@ enum Direction {
     Right,
 }
 
+fn is_opposite(d1: Direction, d2: Direction) -> bool {
+    match (d1, d2) {
+        (Direction::Up, Direction::Down) | 
+        (Direction::Down, Direction::Up) |
+        (Direction::Left, Direction::Right) | 
+        (Direction::Right, Direction::Left) => true,
+        _ => false,
+    }
+}
+
 impl Direction {
     pub fn from_keycode(key: ggez::input::keyboard::KeyCode) -> Option<Direction> {
         match key {
@@ -140,6 +150,11 @@ impl Snake {
         }
     }
 
+    fn reverse(&mut self) {
+        self.body.reverse();
+        self.head = self.body[0];
+    }
+
     fn reset(&mut self) {
         self.body = vec![Position::new_by_direction(self.head.x, self.head.y, self.direction)]
     }
@@ -236,6 +251,9 @@ impl event::EventHandler for Game {
             Game::gameover(ctx);
         }
         if let Some(direction) = Direction::from_keycode(keycode) {
+            if is_opposite(direction, self.snake.direction) {
+                self.snake.reverse()
+            }
             self.snake.direction = direction;
         }
     }
