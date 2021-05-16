@@ -1,6 +1,3 @@
-extern crate ggez;
-extern crate rand;
-
 const SNAKE_INIT_POS: (i16, i16) = (5, 5);
 const FRUIT_INIT_POS: (i16, i16) = (10, 10);
 
@@ -198,8 +195,8 @@ impl Game {
         }
     }
 
-    fn gameover(_ctx: &Context) {
-
+    fn gameover(ctx: &mut Context) {
+        ggez::event::quit(ctx)
     }
 }
 
