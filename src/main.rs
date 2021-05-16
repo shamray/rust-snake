@@ -1,4 +1,5 @@
 extern crate ggez;
+extern crate rand;
 
 const SNAKE_INIT_POS: (i16, i16) = (5, 5);
 const FRUIT_INIT_POS: (i16, i16) = (10, 10);
@@ -13,11 +14,13 @@ const SCREEN_SIZE: (f32, f32) = (
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 const DEFAULT_ACCEL: i16 = 1;
-const DEFAULT_FPS: u16 = 4;
+const DEFAULT_FPS: u16 = 60;
 
 use ggez::{event, graphics, conf, Context, ContextBuilder, GameResult};
 use ggez::input::keyboard::KeyCode;
 use ggez::input::keyboard::KeyMods;
+
+use rand::Rng;
 
 #[derive(Copy, Clone)]
 enum Direction {
@@ -53,12 +56,24 @@ impl Position {
     pub fn new_by_direction(x: i16, y: i16, direction: Direction) -> Self {
         let accel = DEFAULT_ACCEL;
 
-        let (x, y) = match direction {
+        let (mut x, mut y) = match direction {
             Direction::Up => (x, y - accel),
             Direction::Down => (x, y + accel),
             Direction::Left => (x - accel, y),
             Direction::Right => (x + accel, y),
         };
+
+        if x < 0 {
+            x = PIXEL_SIZE.0;
+        } else if x >= PIXEL_SIZE.0 {
+            x = 0;
+        }
+
+        if y < 0 {
+            y = PIXEL_SIZE.0;
+        } else if y >= PIXEL_SIZE.0 {
+            y = 0;
+        }
 
         Self { x, y }
     }
@@ -86,43 +101,92 @@ impl Fruit {
         }
     }
 
+    fn regenerate(&mut self) {
+        let mut rng = rand::thread_rng();
+
+        let x = rng.gen_range(0..SIZE_IN_PIXELS.0) as i16;
+        let y = rng.gen_range(0..SIZE_IN_PIXELS.1) as i16;
+
+        self.pos = Position::new(x, y)
+    }
+
     fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         let mesh = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), self.pos.into(), RED.into())?;
         graphics::draw(ctx, &mesh, ggez::graphics::DrawParam::default())        
     }
 }
 
+enum SnakeState {
+    AteFruit,
+    SelfCollision,
+}
+
 struct Snake {
     head: Position,
+    body: Vec<Position>,
     direction: Direction,
+    state: Option<SnakeState>,
 }
 
 impl Snake {
     pub fn new(x: i16, y: i16) -> Self {
         let direction = Direction::Right;
+        let mut body = Vec::<Position>::new();
+        body.push(Position::new(x, y));
+        body.push(Position::new_by_direction(x, y, direction));
 
         Self {
-            direction,
             head: Position::new(x, y),
+            state: None,
+            body,
+            direction,
         }
+    }
+
+    fn reset(&mut self) {
+        self.body = vec![Position::new_by_direction(self.head.x, self.head.y, self.direction)]
+    }
+
+    fn self_collision(&self) -> bool{
+        for segment in &self.body {
+            if self.head == *segment {
+                return true;
+            }
+        }
+        false
     }
 
     fn update(&mut self, fruit: &Fruit) -> GameResult<()> {
         let new_head = Position::new_by_direction(self.head.x, self.head.y, self.direction);
+        self.body.insert(0, self.head);
         self.head = new_head;
+
+        if self.head == fruit.pos {
+            self.state = Some(SnakeState::AteFruit)
+        } else if self.self_collision() {
+            self.state = Some(SnakeState::SelfCollision)
+        } else {
+            self.body.pop();
+            self.state = None;
+        }
 
         Ok(())
     }
 
     fn draw(&self, ctx: &mut Context) -> GameResult<()> {
-        let mesh = graphics::Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), self.head.into(), GREEN.into())?;
-        graphics::draw(ctx, &mesh, ggez::graphics::DrawParam::default())        
+        let mut mb = graphics::MeshBuilder::new();
+        for &segment in &self.body {
+            mb.rectangle(graphics::DrawMode::fill(), segment.into(), GREEN.into());
+        }
+        let mesh = mb.build(ctx)?;
+        graphics::draw(ctx, &mesh, ggez::graphics::DrawParam::default())
     }
 }
 
 struct Game {
     snake: Snake,
     fruit: Fruit,
+    x: u32,
 }
 
 impl Game {
@@ -130,6 +194,7 @@ impl Game {
         Self {
             snake: Snake::new(SNAKE_INIT_POS.0, SNAKE_INIT_POS.1),
             fruit: Fruit::new(FRUIT_INIT_POS.0, FRUIT_INIT_POS.1),
+            x: 0,
         }
     }
 
@@ -150,7 +215,15 @@ impl event::EventHandler for Game {
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         while ggez::timer::check_update_time(ctx, DEFAULT_FPS as u32) {
-            self.snake.update(&self.fruit)?;
+            self.x = (self.x + 1) % 10;
+            if self.x == 0 {
+                match self.snake.state {
+                    Some(SnakeState::AteFruit) => self.fruit.regenerate(),
+                    Some(SnakeState::SelfCollision) => self.snake.reset(),
+                    _ => (),
+                }
+                self.snake.update(&self.fruit)?;
+            }
         }
         Ok(())
     }
