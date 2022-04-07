@@ -5,5 +5,5 @@ authors = ["Volodymyr Shamray <shamray@outlook.com>"]
 edition = "2018"
 
 [dependencies]
-ggez = "0.5"
+ggez = "0.7"
 rand = "0.8"

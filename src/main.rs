@@ -260,13 +260,13 @@ impl event::EventHandler for Game {
 }
 
 pub fn main() -> GameResult { 
-    let (ctx, event_loop) = &mut ContextBuilder::new("snakegame", "shamray")
+    let (ctx, event_loop) = ContextBuilder::new("snakegame", "shamray")
         .window_setup(conf::WindowSetup::default().title("Snake! SNAAAKE!"))
         .window_mode(conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
         .build()
         .expect("Failed to build ggez context builder");
 
-    let game = &mut Game::new();
+    let game = Game::new();
 
     event::run(ctx, event_loop, game)
 }
