@@ -188,7 +188,7 @@ impl Snake {
     fn draw(&self, ctx: &mut Context) -> GameResult<()> {
         let mut mb = graphics::MeshBuilder::new();
         for &segment in &self.body {
-            mb.rectangle(graphics::DrawMode::fill(), segment.into(), GREEN.into());
+            mb.rectangle(graphics::DrawMode::fill(), segment.into(), GREEN.into())?;
         }
         let mesh = mb.build(ctx)?;
         graphics::draw(ctx, &mesh, ggez::graphics::DrawParam::default())
