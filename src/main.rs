@@ -140,7 +140,6 @@ impl Snake {
         let direction = Direction::Right;
         let mut body = Vec::<Position>::new();
         body.push(Position::new(x, y));
-        body.push(Position::new_by_direction(x, y, direction));
 
         Self {
             head: Position::new(x, y),
@@ -156,7 +155,8 @@ impl Snake {
     }
 
     fn reset(&mut self) {
-        self.body = vec![Position::new_by_direction(self.head.x, self.head.y, self.direction)]
+        self.body = vec![Position::new_by_direction(self.head.x, self.head.y, self.direction)];
+        self.head = self.body[0];
     }
 
     fn self_collision(&self) -> bool{
