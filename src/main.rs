@@ -170,8 +170,8 @@ impl Snake {
 
     fn update(&mut self, fruit: &Fruit) -> GameResult<()> {
         let new_head = Position::new_by_direction(self.head.x, self.head.y, self.direction);
-        self.body.insert(0, self.head);
         self.head = new_head;
+        self.body.insert(0, self.head);
 
         if self.head == fruit.pos {
             self.state = Some(SnakeState::AteFruit)
