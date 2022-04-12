@@ -139,7 +139,8 @@ impl Snake {
     pub fn new(x: i16, y: i16) -> Self {
         let direction = Direction::Right;
         let mut body = Vec::<Position>::new();
-        body.push(Position::new(x, y));
+        // body.push(Position::new(x, y));
+        // body.push(Position::new_by_direction(x, y, direction));
 
         Self {
             head: Position::new(x, y),
@@ -150,13 +151,13 @@ impl Snake {
     }
 
     fn reverse(&mut self) {
+        self.body.insert(0, self.head);
         self.body.reverse();
-        self.head = self.body[0];
+        self.head = self.body.pop().unwrap();
     }
 
     fn reset(&mut self) {
-        self.body = vec![Position::new_by_direction(self.head.x, self.head.y, self.direction)];
-        self.head = self.body[0];
+        self.body = Vec::new()
     }
 
     fn self_collision(&self) -> bool{
@@ -190,6 +191,7 @@ impl Snake {
         for &segment in &self.body {
             mb.rectangle(graphics::DrawMode::fill(), segment.into(), GREEN.into())?;
         }
+        mb.rectangle(graphics::DrawMode::fill(), self.head.into(), GREEN.into())?;
         let mesh = mb.build(ctx)?;
         graphics::draw(ctx, &mesh, ggez::graphics::DrawParam::default())
     }
