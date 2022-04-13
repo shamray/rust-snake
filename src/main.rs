@@ -3,9 +3,9 @@ const FRUIT_INIT_POS: (i16, i16) = (10, 10);
 
 const PIXEL_SIZE: (i16, i16) = (20, 20);
 const SIZE_IN_PIXELS: (i16, i16) = (20, 20);
-const SCREEN_SIZE: (f32, f32) = (
-    (PIXEL_SIZE.0 * SIZE_IN_PIXELS.0) as f32,
-    (PIXEL_SIZE.1 * SIZE_IN_PIXELS.1) as f32,
+const SCREEN_SIZE: (i32, i32) = (
+    (PIXEL_SIZE.0 * SIZE_IN_PIXELS.0) as i32,
+    (PIXEL_SIZE.1 * SIZE_IN_PIXELS.1) as i32,
 );
 
 const GREEN: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
@@ -13,7 +13,9 @@ const RED: [f32; 4] = [1.0, 0.0, 0.0, 1.0];
 const DEFAULT_ACCEL: i16 = 1;
 const DEFAULT_FPS: u16 = 60;
 
-use ggez::{event, graphics, conf, Context, ContextBuilder, GameResult};
+extern crate good_web_game as ggez;
+
+use ggez::{event, graphics, Context, GameResult, timer};
 use ggez::input::keyboard::KeyCode;
 use ggez::input::keyboard::KeyMods;
 
@@ -38,12 +40,12 @@ fn is_opposite(d1: Direction, d2: Direction) -> bool {
 }
 
 impl Direction {
-    pub fn from_keycode(key: ggez::input::keyboard::KeyCode) -> Option<Direction> {
+    pub fn from_keycode(key: KeyCode) -> Option<Direction> {
         match key {
-            ggez::input::keyboard::KeyCode::Up => Some(Direction::Up),
-            ggez::input::keyboard::KeyCode::Down => Some(Direction::Down),
-            ggez::input::keyboard::KeyCode::Left => Some(Direction::Left),
-            ggez::input::keyboard::KeyCode::Right => Some(Direction::Right),
+            KeyCode::Up => Some(Direction::Up),
+            KeyCode::Down => Some(Direction::Down),
+            KeyCode::Left => Some(Direction::Left),
+            KeyCode::Right => Some(Direction::Right),
             _ => None
         }
     }
@@ -138,7 +140,7 @@ struct Snake {
 impl Snake {
     pub fn new(x: i16, y: i16) -> Self {
         let direction = Direction::Right;
-        let mut body = Vec::<Position>::new();
+        let body = Vec::<Position>::new();
         // body.push(Position::new(x, y));
         // body.push(Position::new_by_direction(x, y, direction));
 
@@ -213,7 +215,7 @@ impl Game {
     }
 
     fn gameover(ctx: &mut Context) {
-        ggez::event::quit(ctx)
+        event::quit(ctx)
     }
 }
 
@@ -228,7 +230,7 @@ impl event::EventHandler for Game {
     }
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        while ggez::timer::check_update_time(ctx, DEFAULT_FPS as u32) {
+        while timer::check_update_time(ctx, DEFAULT_FPS as u32) {
             self.x = (self.x + 1) % 10;
             if self.x == 0 {
                 match self.snake.state {
@@ -249,7 +251,7 @@ impl event::EventHandler for Game {
         _keymods: KeyMods,
         _repeat: bool
     ) {
-        if keycode == ggez::input::keyboard::KeyCode::Escape {
+        if keycode == KeyCode::Escape {
             Game::gameover(ctx);
         }
         if let Some(direction) = Direction::from_keycode(keycode) {
@@ -261,14 +263,13 @@ impl event::EventHandler for Game {
     }
 }
 
-pub fn main() -> GameResult { 
-    let (ctx, event_loop) = ContextBuilder::new("snakegame", "shamray")
-        .window_setup(conf::WindowSetup::default().title("Snake! SNAAAKE!"))
-        .window_mode(conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
-        .build()
-        .expect("Failed to build ggez context builder");
-
-    let game = Game::new();
-
-    event::run(ctx, event_loop, game)
+pub fn main() -> GameResult {
+    ggez::start(
+        ggez::conf::Conf::default()
+            .window_title("Snake Game".to_owned())
+            .window_width(SCREEN_SIZE.0)
+            .window_height(SCREEN_SIZE.1)
+        ,
+        |_| Box::new(Game::new()),
+    )
 }

@@ -5,7 +5,7 @@ authors = ["Volodymyr Shamray <shamray@outlook.com>"]
 edition = "2018"
 
 [dependencies]
-ggez = "0.7"
+good-web-game = "0.5"
 rand = "0.8"
 
 [profile.dev]
